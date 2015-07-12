@@ -48,131 +48,131 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 public class K9DriveToWhite extends OpMode {
 
-	final static double MOTOR_POWER = 0.15; // Higher values will cause the robot to move faster
-	final static double HOLD_IR_SIGNAL_STRENGTH = 0.20; // Higher values will cause the robot to follow closer
-	final static double LIGHT_THRESHOLD = 0.5;
+    final static double MOTOR_POWER = 0.15; // Higher values will cause the robot to move faster
+    final static double HOLD_IR_SIGNAL_STRENGTH = 0.20; // Higher values will cause the robot to follow closer
+    final static double LIGHT_THRESHOLD = 0.5;
 
-	double armPosition;
-	double clawPosition;
+    double armPosition;
+    double clawPosition;
 
-	DcMotor motorRight;
-	DcMotor motorLeft;
-	Servo claw;
-	Servo arm;
-	LightSensor reflectedLight;
-	double left, right = 0.0;
+    DcMotor motorRight;
+    DcMotor motorLeft;
+    Servo claw;
+    Servo arm;
+    LightSensor reflectedLight;
+    double left, right = 0.0;
 
-	boolean bFound = false;
-	double reflection = 0.0;
+    boolean bFound = false;
+    double reflection = 0.0;
 
-	/**
-	 * Constructor
-	 */
-	public K9DriveToWhite() {
+    /**
+     * Constructor
+     */
+    public K9DriveToWhite() {
 
-	}
+    }
 
-	/*
-	 * Code to run when the op mode is first enabled goes here
-	 * 
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
-	 */
-	@Override
-	public void start() {
+    /*
+     * Code to run when the op mode is first enabled goes here
+     *
+     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
+     */
+    @Override
+    public void start() {
 
-		/*
-		 * Use the hardwareMap to get the dc motors and servos by name.
-		 * Note that the names of the devices must match the names used
-		 * when you configured your robot and created the configuration file.
-		 */
-		
-		/*
-		 * For the demo Tetrix K9 bot we assume the following,
-		 *   There are two motors "motor_1" and "motor_2"
-		 *   "motor_1" is on the right side of the bot.
-		 *   "motor_2" is on the left side of the bot..
-		 *   
-		 * We also assume that there are two servos "servo_1" and "servo_6"
-		 *    "servo_1" controls the arm joint of the manipulator.
-		 *    "servo_6" controls the claw joint of the manipulator.
-		 */
-		motorRight = hardwareMap.dcMotor.get("motor_2");
-		motorLeft = hardwareMap.dcMotor.get("motor_1");
-		motorLeft.setDirection(DcMotor.Direction.REVERSE);
-		
-		arm = hardwareMap.servo.get("servo_1");
-		claw = hardwareMap.servo.get("servo_6");
+        /*
+         * Use the hardwareMap to get the dc motors and servos by name.
+         * Note that the names of the devices must match the names used
+         * when you configured your robot and created the configuration file.
+         */
 
-		// set the starting position of the wrist and claw
-		armPosition = 0.4;
-		clawPosition = 0.25;
+        /*
+         * For the demo Tetrix K9 bot we assume the following,
+         *   There are two motors "motor_1" and "motor_2"
+         *   "motor_1" is on the right side of the bot.
+         *   "motor_2" is on the left side of the bot..
+         *
+         * We also assume that there are two servos "servo_1" and "servo_6"
+         *    "servo_1" controls the arm joint of the manipulator.
+         *    "servo_6" controls the claw joint of the manipulator.
+         */
+        motorRight = hardwareMap.dcMotor.get("motor_2");
+        motorLeft = hardwareMap.dcMotor.get("motor_1");
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
 
-		/*
-		 * We also assume that we have a LEGO light sensor
-		 * with a name of "light_sensor" configured for our robot.
-		 */
-		reflectedLight = hardwareMap.lightSensor.get("light_sensor");
+        arm = hardwareMap.servo.get("servo_1");
+        claw = hardwareMap.servo.get("servo_6");
+
+        // set the starting position of the wrist and claw
+        armPosition = 0.4;
+        clawPosition = 0.25;
+
+        /*
+         * We also assume that we have a LEGO light sensor
+         * with a name of "light_sensor" configured for our robot.
+         */
+        reflectedLight = hardwareMap.lightSensor.get("light_sensor");
 
         // turn on LED of light sensor.
         reflectedLight.enableLed(true);
-	}
+    }
 
-	/*
-	 * This method will be called repeatedly in a loop
-	 * 
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#run()
-	 */
-	@Override
-	public void loop() {
+    /*
+     * This method will be called repeatedly in a loop
+     *
+     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#run()
+     */
+    @Override
+    public void loop() {
 
-		// keep manipulator out of the way.
-		arm.setPosition(armPosition);
-		claw.setPosition(clawPosition);
-		/*
-		 * read the light sensor.
-		 */
-		reflection = reflectedLight.getLightLevel();
+        // keep manipulator out of the way.
+        arm.setPosition(armPosition);
+        claw.setPosition(clawPosition);
+        /*
+         * read the light sensor.
+         */
+        reflection = reflectedLight.getLightLevel();
 
-		if (reflection < LIGHT_THRESHOLD) {
-			bFound = true;
-		}
-		if (bFound == true) {
-			/* stop motors */
-			left = 0.0;
-			right = 0.0;
-		}
-		else {
-			left = 0.25;
-			right = 0.25;
-		}/*
-		 * set the motor power
-		 */
+        if (reflection < LIGHT_THRESHOLD) {
+            bFound = true;
+        }
+        if (bFound) {
+            /* stop motors */
+            left = 0.0;
+            right = 0.0;
+        }
+        else {
+            left = 0.25;
+            right = 0.25;
+        }/*
+         * set the motor power
+         */
         motorRight.setPower(left);
         motorLeft.setPower(right);
 
 
-		/*
-		 * Send telemetry data back to driver station. Note that if we are using
-		 * a legacy NXT-compatible motor controller, then the getPower() method
-		 * will return a null value. The legacy NXT-compatible motor controllers
-		 * are currently write only.
-		 */
+        /*
+         * Send telemetry data back to driver station. Note that if we are using
+         * a legacy NXT-compatible motor controller, then the getPower() method
+         * will return a null value. The legacy NXT-compatible motor controllers
+         * are currently write only.
+         */
 
-		telemetry.addData("Text", "*** Robot Data***");
+        telemetry.addData("Text", "*** Robot Data***");
         telemetry.addData("time", "elapsed time: " + Double.toString(this.time));
         telemetry.addData("reflection", "reflection:  " + Double.toString(reflection));
-		telemetry.addData("left tgt pwr",  "left  pwr: " + Double.toString(left));
-		telemetry.addData("right tgt pwr", "right pwr: " + Double.toString(right));
-	}
+        telemetry.addData("left tgt pwr",  "left  pwr: " + Double.toString(left));
+        telemetry.addData("right tgt pwr", "right pwr: " + Double.toString(right));
+    }
 
-	/*
-	 * Code to run when the op mode is first disabled goes here
-	 * 
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#stop()
-	 */
-	@Override
-	public void stop() {
+    /*
+     * Code to run when the op mode is first disabled goes here
+     *
+     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#stop()
+     */
+    @Override
+    public void stop() {
 
-	}
+    }
 
 }

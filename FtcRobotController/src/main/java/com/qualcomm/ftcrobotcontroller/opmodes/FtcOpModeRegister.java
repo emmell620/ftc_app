@@ -62,6 +62,7 @@ public class FtcOpModeRegister implements OpModeRegister
         manager.register("K9DriveToWhite", K9DriveToWhite.class);
         manager.register("K9TankDrive", K9TankDrive.class);
         manager.register("K9TankDriveML", K9TankDriveML.class);
+        manager.register("K9Ultra", K9Ultra.class);
         manager.register("K9Line", K9Line.class);
         manager.register("K9IrSeeker", K9IrSeeker.class);
         manager.register("K9AutoTime", K9AutoTime.class);

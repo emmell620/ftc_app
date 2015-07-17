@@ -12,7 +12,7 @@ public class Drive
     private OpMode opMode;
     private float joystickDeadzone = 0.2f;
     private float maxSpeed = 1.0f;
-
+    private float minSpeed = 0.1f;
 
     public Drive(OpMode opMode)
     {
@@ -53,6 +53,15 @@ public class Drive
         this.maxSpeed = maxSpeed;
     }
 
+    public float getMinSpeed()
+    {
+        return minSpeed;
+    }
+
+    public void setMinSpeed(float minSpeed)
+    {
+        this.minSpeed = minSpeed;
+    }
 
     public void tank_drive(DcMotor leftDrive, DcMotor rightDrive)
     {
@@ -61,10 +70,20 @@ public class Drive
         float left = -opMode.gamepad1.left_stick_y;
         float right = -opMode.gamepad1.right_stick_y;
 
-        opMode.telemetry.addData("left org pwr", "original left pwr: " + String.format("%.2f", left));
+        opMode.telemetry.addData("left org pwr", "original left pwr: "
+                + String.format("%.2f", left));
 
-        left = (float) (Math.signum(left) * Math.pow(left, 2));
-        right = (float) (Math.signum(right) * Math.pow(right, 2));
+        if (opMode.gamepad1.left_stick_y != 0)
+        {
+            left = (float) (Math.signum(left) *
+                    ((Math.pow(left, 2) * (maxSpeed - minSpeed)) + minSpeed));
+        }
+
+        if (opMode.gamepad1.right_stick_y != 0)
+        {
+            right = (float) (Math.signum(right) *
+                    ((Math.pow(right, 2) * (maxSpeed - minSpeed)) + minSpeed));
+        }
 
         opMode.telemetry.addData("left fnl pwr", "final left pwr: " + String.format("%.2f", left));
 

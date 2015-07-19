@@ -12,7 +12,8 @@ public class pMotor
     final private OpMode opMode;
     final private double wheelDiameter;
     final private double gearRatio;
-    final private int encoderCountsPerDriverGearRotation = 1440;
+    // 1120 is the number for the AndyMark motors. Tetrix Motors are 1440 PPR
+    final private int encoderCountsPerDriverGearRotation = 1120;
 
     final private LinkedList<DcMotor> leftMotorsWithEncoders =
             new LinkedList<>();
@@ -26,8 +27,9 @@ public class pMotor
     private long leftEncoderTarget;
     private long rightEncoderTarget;
 
-    private int leftThreshold;
-    private int rightThreshold;
+    private int leftEncoderCountThreshold;
+    private int rightEncoderCountThreshold;
+    private long timeoutMillis;
     private int checkMotorsFrequency = 60;
 
     private class MotorStallException extends Exception
@@ -156,7 +158,7 @@ public class pMotor
         for (DcMotor motor : leftMotorsWithEncoders)
         {
             if (Math.abs(leftEncoderTarget - motor.getCurrentPosition()) <
-                    leftThreshold)
+                    leftEncoderCountThreshold)
             {
                 targetIsReached = true;
             }
@@ -165,7 +167,7 @@ public class pMotor
         for (DcMotor motor : rightMotorsWithEncoders)
         {
             if (Math.abs(rightEncoderTarget - motor.getCurrentPosition()) <
-                    rightThreshold)
+                    rightEncoderCountThreshold)
             {
                 targetIsReached = true;
             }
@@ -174,26 +176,30 @@ public class pMotor
         return targetIsReached;
     }
 
-    private void checkForStall(int previousLeftCounts, int previousRightCounts)
-            throws MotorStallException
+    private boolean checkForStall(int previousLeftCounts,
+                                  int previousRightCounts)
     {
+        boolean isStallDetected = false;
+
         for (DcMotor motor : leftMotorsWithEncoders)
         {
-            if (Math.abs(previousLeftCounts - motor.getCurrentPosition()) <
-                    leftThreshold)
+            if (Math.abs(previousLeftCounts - motor.getCurrentPosition()) <=
+                    leftEncoderCountThreshold)
             {
-                throw new MotorStallException("A left motor has stalled.");
+                isStallDetected = true;
             }
         }
 
         for (DcMotor motor : rightMotorsWithEncoders)
         {
-            if (Math.abs(previousRightCounts - motor.getCurrentPosition()) <
-                    rightThreshold)
+            if (Math.abs(previousRightCounts - motor.getCurrentPosition()) <=
+                    rightEncoderCountThreshold)
             {
-                throw new MotorStallException("A right motor has stalled.");
+                isStallDetected = true;
             }
         }
+
+        return isStallDetected;
     }
 
     private void pMotorRun() throws MotorStallException
@@ -201,15 +207,31 @@ public class pMotor
         int previousLeftCounts = -100;
         int previousRightCounts = -100;
         long previousTime = System.currentTimeMillis();
+        long timeStalled = 0;
 
         while (checkIsTargetReached())
         {
             setPowers(leftSpeed, rightSpeed);
 
-            if (System.currentTimeMillis() >
-                    (previousTime + checkMotorsFrequency))
+            long elapsedTime = System.currentTimeMillis() - previousTime;
+
+            if (elapsedTime > checkMotorsFrequency)
             {
-                checkForStall(previousLeftCounts, previousRightCounts);
+                if (checkForStall(previousLeftCounts, previousRightCounts))
+                {
+                    timeStalled += elapsedTime;
+                }
+                else
+                {
+                    timeStalled = 0;
+                }
+
+                if (timeStalled >= timeoutMillis)
+                {
+                    throw new MotorStallException(String.format(
+                            "A motor has remained under the " +
+                                    "threshold for %ld ms.", timeStalled));
+                }
             }
 
             previousTime = System.currentTimeMillis();
@@ -218,11 +240,17 @@ public class pMotor
         haltDrive();
     }
 
-    private int calculateThreshold(double speed)
+    private void calculateThreshold(double speed)
     {
-        // TODO: Calculate stall threshold.
-
-        return 0;
+        // static settings for the Techno Warriors:
+        // Left and Right must be at 0 rpm for 30 seconds, however, you can't
+        // just pick '0' as the encoder count threshold because that will
+        // probably never trigger. Instead, I pick something really small,
+        // like 15 degrees of rotation on the drive shaft, which is
+        // equivalent to about 50 encoder counts
+        leftEncoderCountThreshold = 50;
+        rightEncoderCountThreshold = 50;
+        timeoutMillis = 30000;
     }
 
     /**
@@ -247,7 +275,7 @@ public class pMotor
     @SuppressLint("Assert")
     public void linear(float distance, double speed) throws MotorStallException
     {
-        assert ((0.0 <= speed) && (speed <= 1.0));
+        assert ((0.0 < speed) && (speed <= 1.0));
 
         leftSpeed = Math.signum(distance) * speed;
         rightSpeed = Math.signum(distance) * speed;
@@ -257,8 +285,11 @@ public class pMotor
         rightEncoderTarget = Math.round(
                 ((distance / (Math.PI * wheelDiameter)) * gearRatio) /
                         encoderCountsPerDriverGearRotation);
-        leftThreshold = calculateThreshold(leftSpeed);
-        rightThreshold = calculateThreshold(rightSpeed);
+
+        // For the Techno Warriors static settings, this is a bit redundant,
+        // but I wanted to follow the intent of the function.
+        calculateThreshold(leftSpeed);
+        calculateThreshold(rightSpeed);
 
         pMotorRun();
     }
@@ -284,7 +315,7 @@ public class pMotor
     public void pointTurn(float degrees, double speed)
             throws MotorStallException
     {
-        assert ((0.0 <= speed) && (speed <= 1.0));
+        assert ((0.0 < speed) && (speed <= 1.0));
 
         leftSpeed = Math.signum(degrees) * speed;
         rightSpeed = Math.signum(degrees) * -speed;

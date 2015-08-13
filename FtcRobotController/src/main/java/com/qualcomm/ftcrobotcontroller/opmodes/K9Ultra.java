@@ -59,10 +59,10 @@ public class K9Ultra extends OpMode {
 
     /*
     * Code to run when the op mode is first enabled goes here
-    * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
+    * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#init()
     */
     @Override
-    public void start() {
+    public void init() {
         /*
 		 * Use the hardwareMap to get the dc motors and servos by name. Note
 		 * that the names of the devices must match the names used when you
@@ -153,8 +153,8 @@ public class K9Ultra extends OpMode {
         }
 
         // read the value of the Light and Ultrasonic Sensors
-        lightValue = light.getLightLevel();
-        howClose = ears.getLightLevel();
+        lightValue = light.getLightDetected();
+        howClose = ears.getLightDetected();
 
         // clip the position values so that they never exceed their allowed range.
         armPosition = Range.clip(armPosition, ARM_MIN_RANGE, ARM_MAX_RANGE);

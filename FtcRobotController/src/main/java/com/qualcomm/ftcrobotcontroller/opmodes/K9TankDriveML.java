@@ -83,10 +83,10 @@ public class K9TankDriveML extends OpMode
     /*
      * Code to run when the op mode is first enabled goes here
      *
-     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
+     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#init()
      */
     @Override
-    public void start()
+    public void init()
     {
         /*
 		 * Use the hardwareMap to get the dc motors and servos by name. Note

@@ -75,10 +75,10 @@ public class K9DriveToWhite extends OpMode {
     /*
      * Code to run when the op mode is first enabled goes here
      *
-     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
+     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#init()
      */
     @Override
-    public void start() {
+    public void init() {
 
         /*
          * Use the hardwareMap to get the dc motors and servos by name.
@@ -131,7 +131,7 @@ public class K9DriveToWhite extends OpMode {
         /*
          * read the light sensor.
          */
-        reflection = reflectedLight.getLightLevel();
+        reflection = reflectedLight.getLightDetected();
 
         if (reflection < LIGHT_THRESHOLD) {
             bFound = true;

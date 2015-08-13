@@ -77,10 +77,10 @@ public class NxtTeleOp_TankDrive extends OpMode
 
     /*
      * Code to run when the op mode is first enabled goes here
-     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
+     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#init()
      */
     @Override
-    public void start()
+    public void init()
     {
 
         motorRight = hardwareMap.dcMotor.get("motor_2");

@@ -50,8 +50,8 @@ public class K9TankDriveML extends OpMode
      * Also, as the claw servo approaches 0, the claw opens up (drops the game element).
      */
     // TETRIX VALUES.
-    final static double ARM_MIN_RANGE = 0.20;
-    final static double ARM_MAX_RANGE = 0.90;
+    final static double ARM_MIN_RANGE = 0.10;
+    final static double ARM_MAX_RANGE = 0.80;
     final static double CLAW_MIN_RANGE = 0.20;
     final static double CLAW_MAX_RANGE = 0.7;
 
